@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1e1e1e;
+      --sec: #6b6b6b;
+      --ter: #9a9a9a;
+      --line: #e6e6e6;
+      --border: #cfcfcf;
+      --border-strong: #b3b3b3;
+      --bg: #ffffff;
+      --bg-sub: #fafafa;
+      --chip: #f5f5f5;
+      --badge: #eeeeee;
+      --brand: #0d99ff;
+      --brand-hover: #007ce0;
+      --brand-bg: #e5f4ff;
+      --brand-row: #f2f9ff;
+      --brand-text: #0a5e96;
+      --green: #14ae5c;
+      --green-bg: #e6f6ec;
+      --green-text: #0b7a41;
+      --red: #d9381e;
+      --red-bg: #fde9e5;
+      --red-border: #f4b4a8;
+      --amber: #c77700;
+      --amber-bg: #fff3db;
+      --purple: #7b3fd6;
+      --purple-bg: #f0e8fc;
+    }
+
+    /* Figma sets .figma-dark / .figma-light on <html> when themeColors is enabled. */
+    :root.figma-dark {
+      color-scheme: dark;
+      --ink: #f5f5f5;
+      --sec: #b3b3b3;
+      --ter: #8c8c8c;
+      --line: #3d3d3d;
+      --border: #4d4d4d;
+      --border-strong: #6b6b6b;
+      --bg: #2c2c2c;
+      --bg-sub: #252525;
+      --chip: #383838;
+      --badge: #3d3d3d;
+      --brand-hover: #3aa9ff;
+      --brand-bg: #12344d;
+      --brand-row: #1f2f3b;
+      --brand-text: #7cc7ff;
+      --green: #3dc77f;
+      --green-bg: #1b3a2b;
+      --green-text: #6fdc9f;
+      --red: #ff7b66;
+      --red-bg: #4a2520;
+      --red-border: #7a3328;
+      --amber: #f5b041;
+      --amber-bg: #4a3a1a;
+      --purple: #b794f4;
+      --purple-bg: #35294d;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; margin: 0; }
+
+    body {
+      font-family: "Inter", "Inter UI", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 12px;
+      line-height: normal;
+      color: var(--ink);
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .hidden { display: none !important; }
+    .sec { color: var(--sec); }
+    .small { font-size: 11px; }
+
+    /* Header */
+    .header {
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+    }
+    .header .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .header .app-icon { flex: none; width: 32px; height: 32px; }
+    .header h1 { margin: 0 0 2px; font-size: 14px; font-weight: 600; }
+    .header .sub { font-size: 11px; color: var(--sec); }
+
+    /* Steps */
+    .steps {
+      flex: none;
+      display: flex;
+      align-items: flex-end;
+      gap: 16px;
+      padding: 0 16px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .tab {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 4px 7px;
+      border: none;
+      border-bottom: 2px solid transparent;
+      background: none;
+      font: inherit;
+      font-weight: 500;
+      color: var(--sec);
+      cursor: default;
+      height: auto;
+      border-radius: 0;
+    }
+    .tab.done { cursor: pointer; }
+    .tab.done:hover .tab-label { color: var(--ink); }
+    .tab.active { color: var(--ink); font-weight: 600; border-bottom-color: var(--brand); }
+    .tab-badge {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 1px 6px;
+      border-radius: 8px;
+      background: var(--badge);
+      color: var(--sec);
+    }
+    .tab.done .tab-badge { background: var(--green-bg); color: var(--green-text); }
+
+    /* Layout */
+    .step-panel { display: none; flex: 1; min-height: 0; flex-direction: column; }
+    .step-panel.active { display: flex; }
+    .content {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      background: var(--bg-sub);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .section-label { font-size: 11px; color: var(--sec); margin: 0 0 6px; }
+    .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .section-head .section-label { margin: 0; }
+    .hint { font-size: 11px; color: var(--sec); }
+    .divider { height: 1px; background: var(--line); flex: none; }
+
+    /* Cards */
+    .card {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .card.danger { border-color: var(--red-border); }
+    .card.warn { border-color: var(--border); }
+    .card-pad { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .card-row { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+    .card-row:last-child { border-bottom: none; }
+    .card-title { font-size: 13px; font-weight: 600; }
+    .space-between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+    /* Preview glyph */
+    .preview {
+      flex: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: var(--chip);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .preview i { display: block; width: 14px; height: 14px; border-radius: 3px; background: var(--ink); }
+    .preview i.circle { border-radius: 50%; }
+
+    .grow { flex: 1; min-width: 0; }
+    .name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .name-sub { font-size: 11px; color: var(--sec); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Chips */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+      background: var(--chip);
+      color: var(--sec);
+    }
+    .chip.dot::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .chip.green { background: var(--green-bg); color: var(--green); }
+    .chip.blue { background: var(--brand-bg); color: var(--brand); }
+    .chip.red { background: var(--red-bg); color: var(--red); }
+    .chip.amber { background: var(--amber-bg); color: var(--amber); }
+    .chip.purple { background: var(--purple-bg); color: var(--purple); }
+    .badge { font-size: 10px; font-weight: 500; padding: 1px 6px; border-radius: 8px; background: var(--badge); color: var(--sec); }
+    .mode {
+      font-size: 10px;
+      font-weight: 500;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--chip);
+      color: var(--sec);
+      white-space: nowrap;
+    }
+
+    /* Inputs */
+    input[type="text"], select {
+      font: inherit;
+      color: var(--ink);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      height: 32px;
+      padding: 0 10px;
+      width: 100%;
+    }
+    input[type="text"]::placeholder { color: var(--ter); }
+    input[type="text"]:focus, select:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: 0 0 0 1px var(--brand);
+    }
+    select { appearance: none; -webkit-appearance: none; padding-right: 28px;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%236b6b6b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+      background-repeat: no-repeat; background-position: right 10px center; }
+    :root.figma-dark select {
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23b3b3b3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    }
+    :root.figma-dark option { background: #2c2c2c; color: #f5f5f5; }
+
+    /* Buttons */
+    button {
+      font: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      padding: 7px 12px;
+      white-space: nowrap;
+    }
+    button.primary { background: var(--brand); color: #fff; }
+    button.primary:hover:not(:disabled) { background: var(--brand-hover); }
+    button.primary:disabled { background: var(--line); color: var(--ter); cursor: not-allowed; }
+    button.secondary { background: var(--bg); color: var(--ink); border-color: var(--border); }
+    button.secondary:hover:not(:disabled) { background: var(--chip); }
+    button.secondary:disabled { color: var(--ter); cursor: not-allowed; }
+    button.link {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--brand);
+    }
+    button.link:hover:not(:disabled) { text-decoration: underline; }
+    button.link:disabled { color: var(--ter); cursor: not-allowed; }
+
+    /* Step 1: library list */
+    .search-row { flex: none; padding: 12px 16px; }
+    .list-head {
+      flex: none;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 6px 16px;
+      background: var(--bg-sub);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      font-size: 11px;
+      color: var(--sec);
+    }
+    .list-head .spacer { width: 16px; flex: none; }
+    .list-head .spacer.wide { width: 32px; }
+    .lib-list { flex: 1; min-height: 0; overflow-y: auto; }
+    .lib-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      background: var(--bg);
+    }
+    .lib-row:hover { background: var(--bg-sub); }
+    .lib-row.selected { background: var(--brand-row); }
+    .lib-row .modes { display: flex; gap: 4px; flex: none; }
+    .lib-row.selected .mode { background: var(--brand-bg); color: var(--brand-text); }
+    .lib-empty { padding: 16px; color: var(--sec); }
+    .radio {
+      flex: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1px solid var(--border-strong);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lib-row.selected .radio { border: 1.5px solid var(--brand); }
+    .lib-row.selected .radio::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--brand); }
+
+    /* Step 3 */
+    .summary { flex: none; display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+    .toggle-switch { position: relative; display: inline-block; width: 32px; height: 18px; flex: none; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 999px; transition: background 0.15s; cursor: pointer; }
+    .toggle-slider::before {
+      content: "";
+      position: absolute;
+      width: 14px; height: 14px; left: 2px; top: 2px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.15s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: var(--brand); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(14px); }
+
+    .stat-row { display: flex; align-items: center; gap: 12px; }
+    .stat-row .k { width: 150px; flex: none; color: var(--sec); }
+    .token-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    #message .error { color: var(--red); font-size: 11px; }
+
+    /* Footer */
+    .footer {
+      flex: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--line);
+      background: var(--bg);
+    }
+    .footer .actions { display: flex; gap: 8px; }
+    #footerText { font-size: 11px; color: var(--sec); }
+    #footerText.strong { color: var(--ink); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="brand">
+      <svg class="app-icon" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="2" y="2" width="124" height="124" rx="18" fill="url(#appIconGrad)"/>
+        <rect x="2" y="2" width="124" height="124" rx="18" stroke="#002110" stroke-width="4"/>
+        <path d="M27.9156 89V38.6H41.2356V76.76H61.9716V89H27.9156ZM83.1925 89.864C80.8405 89.864 78.5365 89.552 76.2805 88.928C74.0245 88.256 71.9605 87.344 70.0885 86.192C68.2645 85.04 66.7525 83.744 65.5525 82.304C64.3525 80.816 63.6325 79.256 63.3925 77.624L76.6405 73.952C77.0725 75.152 77.8165 76.184 78.8725 77.048C79.9285 77.864 81.2965 78.32 82.9765 78.416C84.3205 78.464 85.4965 78.104 86.5045 77.336C87.5605 76.568 88.0885 75.56 88.0885 74.312C88.0885 73.496 87.7765 72.728 87.1525 72.008C86.5765 71.24 85.6405 70.688 84.3445 70.352L76.7845 68.408C74.1925 67.736 71.9605 66.704 70.0885 65.312C68.2645 63.92 66.8485 62.216 65.8405 60.2C64.8805 58.184 64.4005 55.928 64.4005 53.432C64.4005 48.488 66.0325 44.648 69.2965 41.912C72.6085 39.128 77.2405 37.736 83.1925 37.736C86.3605 37.736 89.1445 38.144 91.5445 38.96C93.9925 39.776 96.0805 41.072 97.8085 42.848C99.5845 44.576 101.049 46.856 102.201 49.688L89.0245 53.504C88.7845 52.544 88.1605 51.584 87.1525 50.624C86.1925 49.664 84.8725 49.184 83.1925 49.184C81.5605 49.184 80.2885 49.544 79.3765 50.264C78.5125 50.984 78.0805 52.04 78.0805 53.432C78.0805 54.296 78.4405 55.064 79.1605 55.736C79.8805 56.36 80.9125 56.84 82.2565 57.176L89.8885 59.12C93.7285 60.08 96.7285 61.976 98.8885 64.808C101.049 67.592 102.129 70.784 102.129 74.384C102.129 77.696 101.361 80.504 99.8245 82.808C98.3365 85.112 96.1765 86.864 93.3445 88.064C90.5125 89.264 87.1285 89.864 83.1925 89.864Z" fill="#002110"/>
+        <defs>
+          <linearGradient id="appIconGrad" x1="63.9655" y1="65.0016" x2="63.9655" y2="-4.07555" gradientUnits="userSpaceOnUse">
+            <stop stop-color="white"/>
+            <stop offset="1" stop-color="#F7F7F7" stop-opacity="0.8"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div>
+        <h1>Library Swapper</h1>
+        <div class="sub" id="subLabel">Remap variables and styles to another brand library</div>
+      </div>
+    </div>
+    <span id="appliedChip" class="chip green dot hidden">Applied</span>
+  </div>
+
+  <div class="steps" id="steps">
+    <button class="tab" data-step="1"><span class="tab-label">Library</span><span class="tab-badge">1</span></button>
+    <button class="tab" data-step="2"><span class="tab-label">Component</span><span class="tab-badge">2</span></button>
+    <button class="tab" data-step="3"><span class="tab-label">Review</span><span class="tab-badge">3</span></button>
+  </div>
+
+  <!-- STEP 1: choose library -->
+  <div id="step1" class="step-panel active">
+    <div class="search-row">
+      <input id="brandSearch" type="text" placeholder="Search library, collection or brand…" autocomplete="off" />
+    </div>
+    <div class="list-head">
+      <span class="spacer"></span><span class="spacer wide"></span>
+      <span class="grow">Library</span>
+      <span>Brands / modes</span>
+    </div>
+    <div id="libraryList" class="lib-list">
+      <div class="lib-empty">Loading libraries…</div>
+    </div>
+  </div>
+
+  <!-- STEP 2: confirm component -->
+  <div id="step2" class="step-panel">
+    <div class="content">
+      <div>
+        <p class="section-label">Target library</p>
+        <div class="card"><div class="card-row" id="chosenLibrary"></div></div>
+      </div>
+      <div>
+        <div class="section-head">
+          <p class="section-label">Selection on canvas</p>
+          <span class="badge" id="selectionCount">0 layers</span>
+        </div>
+        <div class="card" id="selectionCard">
+          <div class="card-pad hint">Select a layer or component instance on the canvas.</div>
+        </div>
+      </div>
+      <div class="hint" id="selectionHint">Select a different layer on the canvas to update this list.</div>
+    </div>
+  </div>
+
+  <!-- STEP 3: review + accept -->
+  <div id="step3" class="step-panel">
+    <div id="summary" class="summary"><span class="hint">Click “Scan selection” to preview changes.</span></div>
+    <div class="content">
+      <div>
+        <p class="section-label">Brand / mode</p>
+        <select id="modeSelect">
+          <option value="">— Don't pin (leave inherited) —</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div class="card-pad">
+          <div class="space-between">
+            <div class="grow">
+              <div class="name">Also remap styles</div>
+              <div class="hint" style="margin-top: 2px;">Styles have no library browse API, so the first scan indexes existing remote style usages in this file. Later scans reuse that index.</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="includeStylesCheckbox" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="space-between hidden" id="indexRow">
+            <span class="hint">Re-scan the whole document only after adding new style usages elsewhere.</span>
+            <button id="rebuildIndexBtn" class="link">Rebuild style index</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="ambiguousStyles"></div>
+
+      <div id="resultArea"></div>
+      <div id="message"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div id="footerText"></div>
+    <div class="actions">
+      <div class="actions" id="footerStep1">
+        <button id="next1Btn" class="primary" disabled>Next</button>
+      </div>
+      <div class="actions hidden" id="footerStep2">
+        <button id="changeLibraryBtn2" class="secondary">Change library</button>
+        <button id="nextBtn" class="primary" disabled>Next</button>
+      </div>
+      <div class="actions hidden" id="footerStep3">
+        <button id="scanBtn" class="secondary">Scan selection</button>
+        <button id="applyBtn" class="primary" disabled>Accept</button>
+      </div>
+      <div class="actions hidden" id="footerDone">
+        <button id="changeLibraryBtn" class="secondary">Change library</button>
+        <button id="remapAnotherBtn" class="primary">Remap another component</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const subLabelEl = $('subLabel');
+    const appliedChip = $('appliedChip');
+    const tabs = Array.from(document.querySelectorAll('.tab'));
+    const panels = { 1: $('step1'), 2: $('step2'), 3: $('step3') };
+
+    const brandSearch = $('brandSearch');
+    const libraryList = $('libraryList');
+
+    const chosenLibraryEl = $('chosenLibrary');
+    const selectionCountEl = $('selectionCount');
+    const selectionCardEl = $('selectionCard');
+
+    const modeSelect = $('modeSelect');
+    const includeStylesCheckbox = $('includeStylesCheckbox');
+    const indexRow = $('indexRow');
+    const rebuildIndexBtn = $('rebuildIndexBtn');
+    const summaryEl = $('summary');
+    const ambiguousStylesEl = $('ambiguousStyles');
+    const resultAreaEl = $('resultArea');
+    const messageEl = $('message');
+
+    const footerText = $('footerText');
+    const footers = { 1: $('footerStep1'), 2: $('footerStep2'), 3: $('footerStep3'), done: $('footerDone') };
+    const next1Btn = $('next1Btn');
+    const nextBtn = $('nextBtn');
+    const scanBtn = $('scanBtn');
+    const applyBtn = $('applyBtn');
+    const remapAnotherBtn = $('remapAnotherBtn');
+    const changeLibraryBtn = $('changeLibraryBtn');
+    const changeLibraryBtn2 = $('changeLibraryBtn2');
+
+    let libraries = [];
+    let selectedLibrary = null;
+    let currentStep = 1;
+    let applied = false;
+    let selectionCount = 0;
+    let lastScan = null;
+
+    function post(type, payload) {
+      parent.postMessage({ pluginMessage: { type, ...payload } }, '*');
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function plural(n, one, many) {
+      return n + ' ' + (n === 1 ? one : many);
+    }
+
+    function setFooterText(text, strong) {
+      footerText.textContent = text;
+      footerText.classList.toggle('strong', !!strong);
+    }
+
+    /* ---------- Step navigation ---------- */
+
+    function goToStep(step) {
+      currentStep = step;
+      for (const s of [1, 2, 3]) panels[s].classList.toggle('active', s === step);
+
+      if (step === 2) {
+        renderChosenLibrary();
+        renderSelectionFooter();
+      }
+
+      if (step === 3) {
+        applied = false;
+        lastScan = null;
+        messageEl.innerHTML = '';
+        resultAreaEl.innerHTML = '';
+        ambiguousStylesEl.innerHTML = '';
+        summaryEl.innerHTML = '<span class="hint">Click “Scan selection” to preview changes.</span>';
+        applyBtn.textContent = 'Accept';
+        applyBtn.disabled = true;
+        renderModeOptions((selectedLibrary && selectedLibrary.modes) || [], (selectedLibrary && selectedLibrary.defaultModeId) || null);
+        setFooterText('', false);
+      }
+
+      refreshChrome();
+    }
+
+    function refreshChrome() {
+      const reached = applied ? 4 : currentStep;
+      tabs.forEach((tab) => {
+        const n = Number(tab.dataset.step);
+        const isDone = n < reached;
+        tab.classList.toggle('active', n === currentStep && !applied);
+        tab.classList.toggle('done', isDone);
+        tab.querySelector('.tab-badge').textContent = isDone ? '✓' : String(n);
+      });
+
+      subLabelEl.textContent = currentStep === 1 || !selectedLibrary
+        ? 'Remap variables and styles to another brand library'
+        : `${selectedLibrary.libraryName} · ${selectedLibrary.collectionName}`;
+      appliedChip.classList.toggle('hidden', !applied);
+
+      footers[1].classList.toggle('hidden', currentStep !== 1);
+      footers[2].classList.toggle('hidden', currentStep !== 2);
+      footers[3].classList.toggle('hidden', !(currentStep === 3 && !applied));
+      footers.done.classList.toggle('hidden', !(currentStep === 3 && applied));
+
+      if (currentStep === 1) {
+        next1Btn.disabled = !selectedLibrary;
+        setFooterText(`${plural(libraries.length, 'library', 'libraries')} visible to this file`, false);
+      }
+    }
+
+    tabs.forEach((tab) => {
+      tab.onclick = () => {
+        const n = Number(tab.dataset.step);
+        if (n < currentStep && !(n === 2 && !selectedLibrary)) goToStep(n);
+      };
+    });
+
+    next1Btn.onclick = () => { if (selectedLibrary) goToStep(2); };
+    nextBtn.onclick = () => {
+      goToStep(3);
+      runScan();
+    };
+    remapAnotherBtn.onclick = () => goToStep(2);
+    const resetToStep1 = () => {
+      selectedLibrary = null;
+      goToStep(1);
+      renderLibraryOptions();
+    };
+    changeLibraryBtn.onclick = resetToStep1;
+    changeLibraryBtn2.onclick = resetToStep1;
+
+    /* ---------- Step 1: library list ---------- */
+
+    function libraryMatches(lib, term) {
+      if (!term) return true;
+      const t = term.toLowerCase();
+      if (lib.libraryName.toLowerCase().includes(t)) return true;
+      if (lib.collectionName.toLowerCase().includes(t)) return true;
+      return (lib.modes || []).some((m) => m.name.toLowerCase().includes(t));
+    }
+
+    function modeChips(modes, max) {
+      const shown = modes.slice(0, max).map((m) => `<span class="mode">${escapeHtml(m.name)}</span>`);
+      if (modes.length > max) shown.push(`<span class="mode">+${modes.length - max}</span>`);
+      return shown.join('');
+    }
+
+    function renderLibraryOptions() {
+      const term = brandSearch.value.trim();
+      const filtered = libraries.filter((l) => libraryMatches(l, term));
+      libraryList.innerHTML = '';
+      if (filtered.length === 0) {
+        libraryList.innerHTML = '<div class="lib-empty">No matching libraries</div>';
+      } else {
+        filtered.forEach((lib, i) => {
+          const row = document.createElement('div');
+          row.className = 'lib-row' + (selectedLibrary && lib.key === selectedLibrary.key ? ' selected' : '');
+          row.innerHTML =
+            '<span class="radio"></span>' +
+            `<span class="preview"><i class="${i % 2 ? 'circle' : ''}"></i></span>` +
+            `<div class="grow"><div class="name">${escapeHtml(lib.libraryName)}</div>` +
+            `<div class="name-sub">${escapeHtml(lib.collectionName)}</div></div>` +
+            `<div class="modes">${modeChips(lib.modes || [], 3)}</div>`;
+          row.onclick = () => {
+            selectedLibrary = lib;
+            renderLibraryOptions();
+            refreshChrome();
+          };
+          row.ondblclick = () => goToStep(2);
+          libraryList.appendChild(row);
+        });
+      }
+      refreshChrome();
+    }
+
+    brandSearch.oninput = () => renderLibraryOptions();
+
+    /* ---------- Step 2: selection ---------- */
+
+    function renderChosenLibrary() {
+      if (!selectedLibrary) { chosenLibraryEl.innerHTML = ''; return; }
+      const modes = (selectedLibrary.modes || []).length;
+      chosenLibraryEl.innerHTML =
+        '<span class="preview"><i></i></span>' +
+        `<div class="grow"><div class="name">${escapeHtml(selectedLibrary.libraryName)}</div>` +
+        `<div class="name-sub">${escapeHtml(selectedLibrary.collectionName)}</div></div>` +
+        (modes ? `<span class="chip purple">${plural(modes, 'brand', 'brands')}</span>` : '');
+    }
+
+    function renderSelectionFooter() {
+      if (currentStep !== 2) return;
+      nextBtn.disabled = selectionCount === 0;
+      setFooterText(selectionCount === 0 ? 'Select a layer to continue' : `${plural(selectionCount, 'layer', 'layers')} ready to scan`, false);
+    }
+
+    function renderSelectionInfo(nodes, count) {
+      selectionCount = count;
+      selectionCountEl.textContent = plural(count, 'layer', 'layers');
+      if (count === 0) {
+        selectionCardEl.innerHTML = '<div class="card-pad hint">Select a layer or component instance on the canvas.</div>';
+      } else {
+        const rows = nodes.slice(0, 5).map((n, i) =>
+          `<div class="card-row"><span class="preview"><i class="${i % 2 ? 'circle' : ''}"></i></span>` +
+          `<div class="grow"><div class="name">${escapeHtml(n.name)}</div></div>` +
+          `<span class="chip">${escapeHtml(n.type)}</span></div>`).join('');
+        const more = count > 5 ? `<div class="card-pad hint">+${count - 5} more</div>` : '';
+        selectionCardEl.innerHTML = rows + more;
+      }
+      renderSelectionFooter();
+    }
+
+    /* ---------- Step 3: scan / apply ---------- */
+
+    includeStylesCheckbox.onchange = () => {
+      indexRow.classList.toggle('hidden', !includeStylesCheckbox.checked);
+    };
+
+    rebuildIndexBtn.onclick = () => {
+      rebuildIndexBtn.disabled = true;
+      summaryEl.innerHTML = '<span class="hint">Rebuilding whole-document style index (this can take a moment)…</span>';
+      post('rebuild-style-index');
+    };
+
+    scanBtn.onclick = () => runScan();
+    function runScan() {
+      if (!selectedLibrary) return;
+      messageEl.innerHTML = '';
+      summaryEl.innerHTML = '<span class="hint">' + (includeStylesCheckbox.checked
+        ? 'Scanning (including whole-document style index, this can take a moment)…'
+        : 'Scanning…') + '</span>';
+      applyBtn.disabled = true;
+      post('scan', { targetKey: selectedLibrary.key, includeStyles: includeStylesCheckbox.checked });
+    }
+
+    applyBtn.onclick = () => {
+      applyBtn.disabled = true;
+      messageEl.innerHTML = '';
+      post('apply', { pinModeId: modeSelect.value || null });
+    };
+
+    function renderModeOptions(modes, defaultModeId) {
+      modeSelect.innerHTML = '';
+      const none = document.createElement('option');
+      none.value = '';
+      none.textContent = '— Don\'t pin (leave inherited) —';
+      modeSelect.appendChild(none);
+      for (const mode of modes) {
+        const opt = document.createElement('option');
+        opt.value = mode.modeId;
+        opt.textContent = mode.name + (mode.modeId === defaultModeId ? ' (default)' : '');
+        modeSelect.appendChild(opt);
+      }
+      if (defaultModeId) modeSelect.value = defaultModeId;
+    }
+
+    function renderAmbiguousStyles(ambiguousStyles) {
+      ambiguousStylesEl.innerHTML = '';
+      for (const entry of ambiguousStyles) {
+        const card = document.createElement('div');
+        card.className = 'card warn';
+        const pad = document.createElement('div');
+        pad.className = 'card-pad';
+        pad.innerHTML =
+          '<div class="space-between"><div>' +
+          `<div class="card-title">${escapeHtml(entry.name)}</div>` +
+          `<div class="hint" style="margin-top: 1px;">Ambiguous style · found in ${plural(entry.candidates.length, 'library', 'libraries')}</div>` +
+          '</div><span class="chip amber">Needs choice</span></div>';
+        const select = document.createElement('select');
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'Choose which one is the target library…';
+        select.appendChild(placeholder);
+        for (const c of entry.candidates) {
+          const opt = document.createElement('option');
+          opt.value = c.key;
+          opt.textContent = c.sampleLocation + (c.matchedVariableName ? ` (uses ${c.matchedVariableName})` : ' (no variable info)');
+          if (entry.chosen === c.key) opt.selected = true;
+          select.appendChild(opt);
+        }
+        select.onchange = () => {
+          if (select.value) post('choose-style-candidate', { styleName: entry.name, styleKey: select.value });
+        };
+        pad.appendChild(select);
+        card.appendChild(pad);
+        ambiguousStylesEl.appendChild(card);
+      }
+    }
+
+    function renderResult(msg) {
+      const s = msg.summary;
+      const stat = (k, v, kind) => `<div class="stat-row"><span class="k">${k}</span><span class="chip ${kind}">${v}</span></div>`;
+      let html = '<div class="card"><div class="card-pad">' +
+        '<div><div class="card-title">Remap complete</div>' +
+        '<div class="hint" style="margin-top: 1px;">Variables and styles now resolve from the target library</div></div>' +
+        '<div class="divider"></div>' +
+        stat('Variables remapped', s.remapped, s.remapped ? 'green' : '') +
+        stat('Unmatched', s.unmatched, s.unmatched ? 'red' : '') +
+        stat('Failed', s.failed, s.failed ? 'red' : '');
+      if (s.styleRemapped || s.styleFailed || s.styleUnmatched) {
+        html += stat('Styles remapped', s.styleRemapped, s.styleRemapped ? 'green' : '') +
+          stat('Styles unmatched', s.styleUnmatched, s.styleUnmatched ? 'red' : '') +
+          stat('Styles failed', s.styleFailed, s.styleFailed ? 'red' : '');
+      }
+      if (s.pinnedCount) {
+        html += stat('Pinned mode', `${plural(s.pinnedCount, 'node', 'nodes')} → ${escapeHtml(s.pinnedModeName)}`, 'purple');
+      }
+      html += '</div></div>';
+
+      if (msg.unmatchedNames && msg.unmatchedNames.length) {
+        html += '<div class="card danger" style="margin-top: 16px;"><div class="card-pad">' +
+          '<div class="card-title">Unmatched tokens</div>' +
+          `<div class="token-chips">${msg.unmatchedNames.map((n) => `<span class="chip red">${escapeHtml(n)}</span>`).join('')}</div>` +
+          '<div class="hint">These have no matching name in the target library and were left unchanged.</div>' +
+          '</div></div>';
+      }
+      if (msg.failures && msg.failures.length) {
+        html += '<div class="card danger" style="margin-top: 16px;"><div class="card-pad">' +
+          '<div class="card-title">Failures</div>' +
+          `<div class="small" style="color: var(--red);">${msg.failures.map(escapeHtml).join('<br>')}</div>` +
+          '</div></div>';
+      }
+      resultAreaEl.innerHTML = html;
+    }
+
+    /* ---------- Messages from the plugin main thread ---------- */
+
+    post('get-libraries');
+
+    onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      if (!msg) return;
+
+      if (msg.type === 'libraries') {
+        libraries = msg.libraries;
+        renderLibraryOptions();
+      }
+
+      if (msg.type === 'selection-changed') {
+        renderSelectionInfo(msg.nodes || [], msg.count || 0);
+      }
+
+      if (msg.type === 'scan-result') {
+        const s = msg.summary;
+        const ss = msg.styleSummary;
+        lastScan = msg;
+        let chips = `<span class="chip green dot">${s.match} to remap</span>` +
+          `<span class="chip dot">${s.same} already on target</span>` +
+          `<span class="chip red dot">${s.unmatched} unmatched</span>`;
+        if (ss && ss.total > 0) {
+          chips += `<span class="chip blue dot">${plural(ss.match, 'style', 'styles')} to remap</span>` +
+            `<span class="chip dot">${plural(ss.same, 'style', 'styles')} on target</span>` +
+            `<span class="chip red dot">${plural(ss.unmatched, 'style', 'styles')} unmatched</span>` +
+            (ss.ambiguous ? `<span class="chip amber dot">${ss.ambiguous} ambiguous</span>` : '');
+        }
+        summaryEl.innerHTML = chips;
+
+        renderModeOptions(msg.targetModes || [], msg.targetDefaultModeId || null);
+        renderAmbiguousStyles(msg.ambiguousStyles || []);
+
+        const total = s.match + (ss ? ss.match : 0);
+        applyBtn.disabled = total === 0;
+        applyBtn.textContent = total ? `Accept · ${total}` : 'Accept';
+        setFooterText(total ? `${plural(s.match, 'variable', 'variables')}${ss && ss.match ? ` · ${plural(ss.match, 'style', 'styles')}` : ''} ready` : 'Nothing to remap', false);
+      }
+
+      if (msg.type === 'apply-result') {
+        applied = true;
+        summaryEl.innerHTML = '<span class="hint">Applied to the current selection.</span>';
+        ambiguousStylesEl.innerHTML = '';
+        renderResult(msg);
+        setFooterText('Done — undo with ⌘Z in Figma', false);
+        refreshChrome();
+      }
+
+      if (msg.type === 'error') {
+        messageEl.innerHTML = `<div class="error">${escapeHtml(msg.message)}</div>`;
+        applyBtn.disabled = true;
+        rebuildIndexBtn.disabled = false;
+      }
+
+      if (msg.type === 'style-index-building') {
+        summaryEl.innerHTML = '<span class="hint">Rebuilding whole-document style index…</span>';
+      }
+
+      if (msg.type === 'style-index-built') {
+        rebuildIndexBtn.disabled = false;
+        summaryEl.innerHTML = `<span class="hint">Style index rebuilt: ${msg.count} distinct remote style name(s) found. Scan again to apply it.</span>`;
+      }
+    };
+
+    refreshChrome();
+  </script>
+</body>
+</html>

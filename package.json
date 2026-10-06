@@ -1,0 +1,16 @@
+{
+  "name": "lib-swapper",
+  "version": "0.1.0",
+  "description": "Figma plugin to remap bound variables on a selection from one variable library to another equivalent library (same collection/token names), without swapping the file's library subscription.",
+  "private": true,
+  "scripts": {
+    "build": "esbuild src/code.ts --bundle --outfile=dist/code.js --target=es2017 --format=iife",
+    "watch": "esbuild src/code.ts --bundle --outfile=dist/code.js --target=es2017 --format=iife --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.97.0",
+    "esbuild": "^0.23.1",
+    "typescript": "^5.5.4"
+  }
+}
